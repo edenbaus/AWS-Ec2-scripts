@@ -1,0 +1,5 @@
+#!/bin/bash
+# This script calls the hostcut script to remove the final entry in ~/.ssh/known_hosts prior to starting a ssh connection to the ec2 instance on 'aws'
+# the -o StrictHostKeyChecking=no flag forces the response 'yes' when promped to add a new ssh key
+hostcut
+ssh -o StrictHostKeyChecking=no ec2-user@aws

@@ -1,0 +1,9 @@
+#!/usr/bin/python
+import os
+
+"""
+This purpose of this script is to remove the final entry in ~/.ssh/known_hosts
+"""
+
+keynum = len(open('/Users/scott/.ssh/known_hosts', 'r').readlines())
+os.system("perl -pi -e 's/\Q$_// if ($. == %d);' ~/.ssh/known_hosts" % keynum)

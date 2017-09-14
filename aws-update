@@ -1,0 +1,39 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+import os
+
+
+"""
+This script will take an ec2 instance id, grab the corresponding external ip address
+then it copies the /etc/hosts file to a temporary file.
+if the last line of /etc/hosts has a hostname entry named 'aws', then that line is removed
+next, the ip address acquired earlier is appended to the hosts file with 'aws' as the hostname
+finally, the temp file overwrites the original /etc/hosts file
+"""
+instanceid = raw_input("aws ec2 instance id: ").strip()
+
+with open('_tmp_', 'w') as f:
+	f.write('#!/bin/bash\n')
+	f.write('aws ec2 describe-instances --instance-ids %s | grep .us-west-2 | grep ec2 > _t_' % instanceid)
+	f.close()
+
+os.system('chmod +x _tmp_ && ./_tmp_ && rm _tmp_')
+with open('_t_', 'r') as g:
+	ip = g.readline().strip().split(': ')[1][1:-2].split('ec2-')[1].split('.')[0].replace('-','.')
+	g.close()
+os.system('rm _t_')
+
+print (ip)
+
+## look for 'aws' in hosts file on last line
+#with open('/etc/hosts', 'r') as f:
+
+lines = open('/etc/hosts').readlines()
+endthree = lines[-1].strip()[-3:]
+if endthree == 'aws':
+	open('/Users/scott/tmphosts', 'w').writelines(lines[:-1])
+else:
+	os.system('cp /etc/hosts /Users/scott/tmphosts')
+
+open('/Users/scott/tmphosts','a').write('\n%s\t aws' % ip)
+os.system('cp /Users/scott/tmphosts /etc/hosts')
