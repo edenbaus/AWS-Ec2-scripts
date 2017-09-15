@@ -1,0 +1,50 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+import os
+#i-0f4feffdf41f44fdc
+"""
+This script will take an ec2 instance id, and desired hostname as input
+Then it will remove existing entries of the same hostname in /etc/hosts
+Lastly it appends the ip  and hostname to /etc/hosts
+
+"""
+instanceid = raw_input('aws ec2 instance id: ').strip()
+hostname = raw_input('desired hostname: ').strip()
+
+# write ip and hostname to temp file _tmp_
+
+# read in ip
+_ = os.system('aws ec2 describe-instances --instance-ids %s | grep .us-west-2 | grep ec2 > _tmp_' % instanceid)
+with open('_tmp_','r') as f:
+	ip = f.readline().strip().split(': ')[1][1:-2].split('ec2-')[1].split('.')[0].replace('-','.')
+	f.close()
+
+os.system('rm _tmp_')# delete _tmp_
+
+lines = open('/etc/hosts').readlines()
+print (len(lines))
+try:
+	prevhost = [i for i in range(len(lines)) if hostname in lines[i]][0] #line # with existing hostname
+	goodlines = [i for i in range(len(lines)) if prevhost != i] #line nums we want
+except:
+	goodlines = lines
+
+open('./tmphosts','w').writelines(goodlines) #write to file
+open('./tmphosts','a').write('\n{0}\t{1}'.format(ip,hostname))
+
+# copy tmphosts to /etc/hosts
+os.system('cp ./tmphosts /etc/hosts')
+
+###################################################################################################
+"""
+This second component is intended to remove offending entries from ~/.ssh/known_hosts prior to
+starting an ssh connection to a new ec2 instance
+"""
+
+hostlines = open('/Users/scott/.ssh/known_hosts').readlines()
+try:
+	prevkey = [i for i in range(len(hostlines)) if hostname in lines[i]][0]#find offending lines
+	os.system("perl -pi -e 's/\Q$_// if ($. == %d);' ~/.ssh/known_hosts" % prevkey)#remove offending lines
+except:
+	print('')
