@@ -1,0 +1,4 @@
+#!/bin/bash
+
+ec2=$1
+ssh -o StrictHostKeyChecking=no ec2-user@$ec2
